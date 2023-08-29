@@ -1,5 +1,6 @@
 declare global {
 	namespace NodeJS {
+		// noinspection JSUnusedGlobalSymbols
 		interface ProcessEnv {
 			VK_TOKEN: string,
 			VK_GROUP_ID: number,

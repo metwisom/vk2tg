@@ -3,11 +3,12 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-import {LastTime} from "./cache";
+import {LastCheck} from "./lastCheck";
 import {VkAnswer} from "./vkTypes";
-import {sendPost} from "./telegram";
+import * as TG from "./telegram";
+import * as process from "process";
 
-let actualLastTime = LastTime.getLastTime();
+let lastCheck = new LastCheck(process.env.CACHE_NAME);
 
 const VK_TOKEN = process.env.VK_TOKEN;
 const VK_GROUP_ID = process.env.VK_GROUP_ID;
@@ -27,15 +28,14 @@ https.get({
 		const posts = answer.response.items.reverse().filter(e => e.text != "");
 
 		for(let item of posts) {
-			if(actualLastTime >= item.date) continue;
+			if(lastCheck.time >= item.date) continue;
 			let text = item.text;
 			if(text.length >= MAX_MESSAGE_LENGTH) {
 				text = item.text.substring(0, MAX_MESSAGE_LENGTH).trim().split(".").reverse().slice(1, MAX_MESSAGE_LENGTH).reverse().join(".") + "...";
 			}
-			sendPost(text, item.id);
-			actualLastTime = item.date;
+			TG.sendPost(text, item.id);
+			lastCheck.time = item.date;
 		}
-		LastTime.save(actualLastTime);
 	});
 });
 
