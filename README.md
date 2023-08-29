@@ -1,6 +1,6 @@
 
 ## vk2tg
-###### VkontakteToTelegram
+###### VkToTelegram
 
 ----
 Checks new posts in the VK wall and sends them to the TG
