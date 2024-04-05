@@ -1,12 +1,11 @@
 import https from "https";
 import * as dotenv from "dotenv";
-
-dotenv.config();
-
 import {LastCheck} from "./lastCheck";
 import {VkAnswer} from "./vkTypes";
 import * as TG from "./telegram";
 import * as process from "process";
+
+dotenv.config();
 
 let lastCheck = new LastCheck(process.env.CACHE_NAME);
 
