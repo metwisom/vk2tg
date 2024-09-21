@@ -1,4 +1,4 @@
-export interface VkAnswer {
+export interface vkAnswer {
 	response: Response;
 }
 export interface Response {
