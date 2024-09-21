@@ -1,30 +1,64 @@
 import https from "https";
+import { URL } from "url";
 
-const VK_GROUP_LINK = process.env.VK_GROUP_LINK;
-const BOT_KEY = process.env.BOT_KEY;
-const TG_CHAT_ID = process.env.TG_CHAT_ID;
-const VK_GROUP_ID = process.env.VK_GROUP_ID;
+const VK_GROUP_LINK: string = process.env.VK_GROUP_LINK as string;
+const BOT_KEY: string = process.env.BOT_KEY as string;
+const TG_CHAT_ID: string = process.env.TG_CHAT_ID as unknown as string;
+const VK_GROUP_ID: string = process.env.VK_GROUP_ID as unknown as string;
 
-export function sendPost(text: string, post_id: number) {
-	text = text
-		.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, "\\$1");
-	text = "*Новый пост в группе*\n\n" + text;
-	text = encodeURI(text);
-	const buttons = {
-		inline_keyboard: [
-			[
-				{
-					text: "Перейти к посту во Вконтакте",
-					"url": `${VK_GROUP_LINK}?w=wall${VK_GROUP_ID}_${post_id}`
+if (!VK_GROUP_LINK || !BOT_KEY || !TG_CHAT_ID || !VK_GROUP_ID) {
+	throw new Error("Необходимо задать все переменные окружения.");
+}
+
+async function sendTelegramMessage(apiUrl: URL): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const req = https.request(apiUrl.toString(), (res) => {
+			let data = "";
+
+			res.on("data", (chunk) => {
+				data += chunk;
+			});
+
+			res.on("end", () => {
+				if (res.statusCode !== 200) {
+					return reject(new Error(`Ошибка отправки: ${res.statusCode}, ответ: ${data}`));
 				}
-			]
-		]
-	};
-	const encodeButtons = encodeURI(JSON.stringify(buttons));
-	https.get({
-		hostname: "api.telegram.org",
-		port: 443,
-		path: `/bot${BOT_KEY}/sendMessage?parse_mode=MarkdownV2&chat_id=${TG_CHAT_ID}&reply_markup=${encodeButtons}&text=${text}`,
-		agent: false
+				resolve();
+			});
+		});
+
+		req.on("error", (err) => reject(err));
+
+		req.end();
 	});
+}
+
+export async function sendPost(text: string, post_id: number) {
+	try {
+		const escapedText = text.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, "\\$1");
+		const encodedText = `*Новый пост в группе*\n\n${escapedText}`;
+		const buttons = {
+			inline_keyboard: [
+				[
+					{
+						text: "Перейти к посту во Вконтакте",
+						url: `${VK_GROUP_LINK}?w=wall${VK_GROUP_ID}_${post_id}`
+					}
+				]
+			]
+		};
+		const encodedButtons = JSON.stringify(buttons);
+
+		const apiUrl = new URL(`/bot${BOT_KEY}/sendMessage`, "https://api.telegram.org");
+		apiUrl.searchParams.append("parse_mode", "MarkdownV2");
+		apiUrl.searchParams.append("chat_id", TG_CHAT_ID);
+		apiUrl.searchParams.append("reply_markup", encodedButtons);
+		apiUrl.searchParams.append("text", encodedText);
+
+		await sendTelegramMessage(apiUrl);
+
+		console.log("Сообщение успешно отправлено.");
+	} catch (error) {
+		console.error("Ошибка при отправке сообщения:", error);
+	}
 }
