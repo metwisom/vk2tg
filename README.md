@@ -8,7 +8,7 @@ Checks new posts in the VK wall and sends them to the TG
 ###### Usage
 ```
 npm i
-npx tsc
+npm run build
 npm start
 ```
 
