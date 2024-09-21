@@ -1,38 +1,54 @@
-import fs from "fs";
+import {promises as fs} from "fs";
 
 class LastCheck {
 	readonly fileName: string;
-	private _lastCheckTime: number = Math.round(new Date().getTime() / 1000);
+	private lastCheckTime: number = Math.round(new Date().getTime() / 1000);
 
-	constructor(cache_file_name: string) {
-		this.fileName = cache_file_name;
-		this.loadCache();
-
+	constructor(cacheFileName: string) {
+		this.fileName = cacheFileName;
+		this.loadCache().catch((error) => {
+			console.error("Error loading cache:", error);
+			this.saveCache().then();
+		});
 	}
 
-	public get time() {
-		return this._lastCheckTime;
+	public get time(): number {
+		return this.lastCheckTime;
 	}
 
 	public set time(value: number) {
-		this._lastCheckTime = value;
-		this.saveCache();
+		this.lastCheckTime = value;
+		this.saveCache().catch((error) => {
+			console.error("Error saving cache:", error);
+		});
 	}
 
-	loadCache() {
-		if(fs.existsSync(this.fileName)) {
-			let data = parseInt(fs.readFileSync(this.fileName, "utf8"));
-			if(isNaN(data)) {
-				throw "cached timestamp is corrupted";
+	private loadCache(): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+
+			const fileExists = await fs.stat(this.fileName).then(() => true).catch(() => false);
+			if(fileExists) {
+				const data = await fs.readFile(this.fileName, "utf8");
+				const timestamp = parseInt(data, 10);
+
+				if(isNaN(timestamp)) {
+					reject(new Error("Cached timestamp is corrupted"));
+					return;
+				}
+
+				this.lastCheckTime = timestamp;
+				resolve();
 			}
-			this._lastCheckTime = data;
+		});
+	}
+
+	private async saveCache(): Promise<void> {
+		try {
+			await fs.writeFile(this.fileName, this.lastCheckTime.toString(), {encoding: "utf8", flag: "w"});
+		} catch (error) {
+			console.error(`Error writing cache file ${this.fileName}:`, error);
 		}
 	}
-
-	saveCache() {
-		fs.writeFileSync(this.fileName, this.time.toString(), {encoding: "utf8", flag: "w"});
-	}
-
 }
 
 export {LastCheck};
