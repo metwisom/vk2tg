@@ -6,9 +6,11 @@
 Checks new posts in the VK wall and sends them to the TG
 
 ###### Usage
-```
+```bash
 npm i
 npm run build
+```
+```bash
 npm start
 ```
 

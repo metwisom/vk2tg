@@ -1,4 +1,4 @@
-import https from "https";
+import https from "node:https";
 
 function httpsGetAsync(options: https.RequestOptions): Promise<string> {
 	return new Promise((resolve, reject) => {

@@ -1,15 +1,17 @@
-import {promises as fs} from "fs";
+import {promises as fs} from "node:fs";
+import {config} from "./config";
 
 class LastCheck {
 	readonly fileName: string;
 	private lastCheckTime: number = Math.round(new Date().getTime() / 1000);
 
-	constructor(cacheFileName: string) {
-		this.fileName = cacheFileName;
-		this.loadCache().catch((error) => {
-			console.error("Error loading cache:", error);
-			this.saveCache().then();
-		});
+	constructor() {
+		this.fileName = config.cacheName;
+		this.loadCache()
+			.catch(() => {
+				console.warn("Warning: Cache file for the last post check not found or corrupted. A new cache file has been created automatically.");
+				this.saveCache().then();
+			});
 	}
 
 	public get time(): number {
@@ -23,32 +25,29 @@ class LastCheck {
 		});
 	}
 
-	private loadCache(): Promise<void> {
-		return new Promise(async (resolve, reject) => {
+	private async loadCache(): Promise<void> {
+		return fs.stat(this.fileName)
+			.then(() =>
+				fs.readFile(this.fileName, "utf8")
+					.then(data => {
+						const timestamp = parseInt(data, 10);
+						if(isNaN(timestamp)) {
+							throw new Error("Cached timestamp is corrupted");
+						}
+						this.lastCheckTime = timestamp;
+					})
+			);
 
-			const fileExists = await fs.stat(this.fileName).then(() => true).catch(() => false);
-			if(fileExists) {
-				const data = await fs.readFile(this.fileName, "utf8");
-				const timestamp = parseInt(data, 10);
-
-				if(isNaN(timestamp)) {
-					reject(new Error("Cached timestamp is corrupted"));
-					return;
-				}
-
-				this.lastCheckTime = timestamp;
-				resolve();
-			}
-		});
 	}
 
 	private async saveCache(): Promise<void> {
 		try {
 			await fs.writeFile(this.fileName, this.lastCheckTime.toString(), {encoding: "utf8", flag: "w"});
 		} catch (error) {
-			console.error(`Error writing cache file ${this.fileName}:`, error);
+			console.error(`Error: Unable to write to the cache file for the last post check. Please check file permissions and try again.`);
+			console.error(error.toString());
 		}
-	}
+	};
 }
 
 export {LastCheck};

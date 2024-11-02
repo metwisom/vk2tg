@@ -1,11 +1,13 @@
 {
   "name": "vk2tg",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Repost from VK to TG",
   "main": "/dist/index.js",
   "scripts": {
     "build": "npx tsc",
     "start": "node --env-file=.env --enable-source-maps dist/main.js",
+    "bun:build": "bun build src/main.ts --outdir dist",
+    "bun:start": "bun run src/main.ts",
     "dev": "npx tsc && node --env-file=.env --enable-source-maps dist/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

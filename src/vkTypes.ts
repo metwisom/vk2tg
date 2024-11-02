@@ -1,10 +1,12 @@
 export interface vkAnswer {
 	response: Response;
 }
+
 export interface Response {
 	count: number;
 	items: (ItemsEntity)[];
 }
+
 export interface ItemsEntity {
 	id: number;
 	from_id: number;
@@ -26,12 +28,14 @@ export interface ItemsEntity {
 	carousel_offset?: number | null;
 	hash: string;
 }
+
 export interface AttachmentsEntity {
 	type: string;
 	photo?: Photo | null;
 	link?: Link | null;
 	doc?: Doc | null;
 }
+
 export interface Photo {
 	album_id: number;
 	date: number;
@@ -45,12 +49,14 @@ export interface Photo {
 	post_id?: number | null;
 	square_crop?: string | null;
 }
+
 export interface SizesEntity {
 	height: number;
 	type: string;
 	width: number;
 	url: string;
 }
+
 export interface Link {
 	url: string;
 	title: string;
@@ -59,6 +65,7 @@ export interface Link {
 	caption?: string | null;
 	photo?: Photo1 | null;
 }
+
 export interface Photo1 {
 	album_id: number;
 	date: number;
@@ -69,6 +76,7 @@ export interface Photo1 {
 	user_id: number;
 	has_tags: boolean;
 }
+
 export interface Doc {
 	id: number;
 	owner_id: number;
@@ -80,29 +88,35 @@ export interface Doc {
 	url: string;
 	access_key: string;
 }
+
 export interface PostSource {
 	platform?: string | null;
 	type: string;
 	data?: string | null;
 }
+
 export interface Comments {
 	can_post: number;
 	count: number;
 	groups_can_post: boolean;
 }
+
 export interface Likes {
 	can_like: number;
 	count: number;
 	user_likes: number;
 	can_publish: number;
 }
+
 export interface Reposts {
 	count: number;
 	user_reposted: number;
 }
+
 export interface Views {
 	count: number;
 }
+
 export interface Donut {
 	is_donut: boolean;
 }
